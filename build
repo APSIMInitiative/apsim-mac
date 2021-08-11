@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# This script will (in theory) rebuild the gtk deps.
+
+# Exit immediately if any individual command fails.
+set -euo pipefail
+
+# Clone gtk-osx, run bootstrapper, install gtk and friends.
+git clone https://gitlab.gnome.org/GNOME/gtk-osx.git
+cd gtk-osx
+./gtk-osx-setup.sh
+alias jhbuild="PATH=$PATH:~/.new_local/bin jhbuild"
+jhbuild bootstrap-gtk-osx
+jhbuild build python3 # This may not be necessary on newer OSX versions - I needed it on mojave (10.14)
+jhbuild build meta-gtk-osx-bootstrap meta-gtk-osx-gtk3
+
+# At this point, gtk and its deps are installed (probably to ~/gtk/inst).
+# Now we install gtk-mac-bundler.
+cd ..
+git clone https://gitlab.gnome.org/GNOME/gtk-mac-bundler.git
+cd gtk-mac-bundler
+make install
+
+# Now we build the bundle.
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+bundle="$dir/gtk.bundle"
+jhbuild run ~/.local/bin/gtk-mac-bundler "$bundle"
+
+bundle_out="$dir/gtk.app/Contents/Resources"
+
+# We need to correct a few issues with the bundle. When re-running this script
+# in the future, it's possible/likely that there will be other such problems.
+# As such, I would highly recommend a manual test of the newly-built gtk env:
+# - by running the gtk-demo application which should be located at
+#    $bundle_out/../MacOS/gtk-demo
+# - and also by running apsim against the new environment. This is left as an
+#   exercise to the reader.
+
+# GtkSharp currently looks for libgdk_pixbuf-2.0.dylib. Let's give it what it wants.
+ln -s "$bundle_out/lib/libgdk_pixbuf-2.0.0.dylib" "$bundle_out/lib/libgdk_pixbuf-2.0.dylib"
+
+# Hack to fix paths in modules and pixbuf loader caches.
+fixpath() {
+    # (Mac sed is not GNU sed...)
+    sed -i -e 's/@executable_path\/..\/Resources/@executable_path\/..\/..\/Resources/' $@
+}
+fixpath "$bundle_out/lib/gtk-3.0/3.0.0/immodules.cache"
+fixpath "$bundle_out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+
+# Finally, zip up the result.
+tar czf deps-new.tar.gz "$bundle_out/lib" "$bundle_out/share"
