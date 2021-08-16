@@ -50,4 +50,4 @@ fixpath "$bundle_out/lib/gtk-3.0/3.0.0/immodules.cache"
 fixpath "$bundle_out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
 
 # Finally, zip up the result.
-tar czf deps-new.tar.gz "$bundle_out/lib" "$bundle_out/share"
+tar czf deps-new.tar.gz -C "$bundle_out" lib share
