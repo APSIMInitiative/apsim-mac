@@ -39,7 +39,9 @@ bundle_out="$dir/gtk.app/Contents/Resources"
 #   exercise to the reader.
 
 # GtkSharp currently looks for libgdk_pixbuf-2.0.dylib. Let's give it what it wants.
-ln -s "$bundle_out/lib/libgdk_pixbuf-2.0.0.dylib" "$bundle_out/lib/libgdk_pixbuf-2.0.dylib"
+pushd "$bundle_out/lib"
+ln -s libgdk_pixbuf-2.0.0.dylib libgdk_pixbuf-2.0.dylib
+popd
 
 # Hack to fix paths in modules and pixbuf loader caches.
 fixpath() {
