@@ -9,10 +9,12 @@ set -euo pipefail
 git clone https://gitlab.gnome.org/GNOME/gtk-osx.git
 cd gtk-osx
 ./gtk-osx-setup.sh
-alias jhbuild="PATH=$PATH:~/.new_local/bin jhbuild"
+export PATH="$PATH:~/.new_local/bin"
 jhbuild bootstrap-gtk-osx
 jhbuild build python3 # This may not be necessary on newer OSX versions - I needed it on mojave (10.14)
-jhbuild build meta-gtk-osx-bootstrap meta-gtk-osx-gtk3
+jhbuild run pip3 install pygments
+# Note: what gtk-osx refers to as gtksourceview3 is, in fact, gtksourceview4.
+jhbuild build meta-gtk-osx-bootstrap meta-gtk-osx-gtk3 gtksourceview3
 
 # At this point, gtk and its deps are installed (probably to ~/gtk/inst).
 # Now we install gtk-mac-bundler.

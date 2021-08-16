@@ -67,6 +67,11 @@
     ${prefix}/bin/gtk3-demo-application
   </binary>
 
+  <!-- Add gtksourceview4 -->
+  <binary>
+    ${prefix}/lib/libgtksourceview-4.0.dylib
+  </binary>
+
 <!-- And the print backends -->
   <binary>
     ${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/printbackends/*.so
